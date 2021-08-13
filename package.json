@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "dev": "nodemon server.js",
     "build": "next build",
     "start": "cross-env NODE_ENV=production node server.js"
   },
@@ -12,9 +12,13 @@
     "cross-env": "^7.0.2",
     "express": "^4.17.1",
     "framer-motion": "^4.1.17",
+    "mongoose": "^5.13.7",
     "next": "latest",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
 }

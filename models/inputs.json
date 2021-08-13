@@ -29,7 +29,7 @@
       },
       {
         "type": "link",
-        "target": "https://digiventures.la/",
+        "to": "https://digiventures.la/",
         "text": "¿Any problem? Contact us"
       }
     ]
@@ -63,8 +63,8 @@
         "regex": "^(?=.*d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$"
       },
       {
-        "type": "confirm_password",
-        "name": "password",
+        "type": "password",
+        "name": "confirm_password",
         "label": "Confirm your password",
         "regex": "^(?=.*d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$",
         "conditions": {
@@ -112,7 +112,7 @@
         "type": "link",
         "to": "https://digiventures.la/",
         "target": "_newblank",
-        "label": "¿Any problem? Contact us"
+        "text": "¿Any problem? Contact us"
       }
     ]
   }
