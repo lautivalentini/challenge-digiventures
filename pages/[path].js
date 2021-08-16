@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from 'next/router'
+
 import { 
   Container,
   Stack,
@@ -15,37 +16,50 @@ import Checkbox from '../components/Checkbox'
 
 export default function Page({ data }) {
   const [information, setInformation] = useState({})
+  const [errors, setErrors] = useState({})
   const toast = useToast()
   const router = useRouter()
   const { path } = router.query
   
-  function handleChange(e) {
-    const name = e.target.name
-    const value = e.target.value || e.target.checked
-    setInformation({
-      ...information,
-      [name]: value
-    })
+  function handleChange(name, value, error) {
+    setInformation({ ...information, [name]: value })
+    setErrors({ ...errors, [name]: error })
   }
 
   async function onSubmit(e) {
     e.preventDefault()
-    const response = await fetch(`http://localhost:3000/${path}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      method: "POST",
-      body: JSON.stringify(information)
-    })
-    const data = await response.json();
-    toast({
-      position: "top",
-      title: data.msg,
-      status: "success",
-      duration: 1000,
-      isClosable: true,
-    })
+    for (const error in errors) {
+      if (errors[error]) {
+        toast({
+          position: "top",
+          title: 'Check all your fields',
+          status: "warning",
+          duration: 1000,
+          isClosable: true,
+        })
+        return
+      }
+    }
+    try {
+      const response = await fetch(`http://localhost:3000/${path}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify(information),
+      })
+      const data = await response.json();
+      toast({
+        position: "top",
+        title: data.msg,
+        status: data.account ? "success" : "warning",
+        duration: 1000,
+        isClosable: true,
+      })
+    } catch(e) {
+      console.log(e)
+    }
   }
   
   return (
@@ -53,11 +67,22 @@ export default function Page({ data }) {
       <Stack width="100%">
         <Text fontSize="30px" fontWeight="bold" textAlign="center">{data?.title}</Text>
         <Stack as="form" onSubmit={onSubmit}>
-          {data?.inputs.map(({ type, name, label, regex, target, required, text, options, to }, index) => {
+          {data?.inputs.map(({ 
+            type, 
+            name, 
+            label, 
+            regex, 
+            target, 
+            required, 
+            text, 
+            options, 
+            to, 
+            conditions = { validations: [], render: [] } 
+          }, index) => {
             if (
-              (type === 'password' || 
-              type === 'text') &&
-              name !== 'custom_country'
+              type === 'password' || 
+              type === 'text' || 
+              type === 'email'
             ) return (
               <Input
                 key={index}
@@ -65,7 +90,12 @@ export default function Page({ data }) {
                 name={name} 
                 label={label} 
                 handleChange={handleChange} 
-                required={required} 
+                required={required}
+                regex={regex}
+                conditions={conditions}
+                information={information}
+                errors={errors}
+                setErrors={setErrors}
               />
             )
             if (type === 'select') return (
@@ -75,25 +105,21 @@ export default function Page({ data }) {
                 name={name} 
                 label={label} 
                 handleChange={handleChange} 
-                options={options} 
-              />
-            )
-            if (
-              type === 'text' && 
-              name === 'custom_country' && 
-              information?.country === 'other'
-            ) return (
-              <Input
-                key={index}
-                type={type}
-                name={name} 
-                label={label} 
-                handleChange={handleChange} 
-                required={required} 
+                options={options}
+                errors={errors}
               />
             )
             if (type === 'button') return <Button key={index} label={label} />
-            if (type === 'checkbox') return <Checkbox key={index} label={label} handleChange={handleChange} />
+            if (type === 'checkbox') return (
+              <Checkbox 
+                key={index} 
+                label={label}
+                name={name}
+                required={required}
+                handleChange={handleChange}
+                errors={errors}
+              />
+            )
             if (type === 'link') return <Link key={index} target={target} to={to} text={text} />
           })}
         </Stack>
@@ -105,10 +131,10 @@ export default function Page({ data }) {
 export async function getStaticPaths() {
   return {
     paths: [
-      { params: { path: '/login' } },
-      { params: { path: '/register' } }
+      { params: { path: 'login' } },
+      { params: { path: 'register' } }
     ],
-    fallback: true,
+    fallback: false,
   };
 }
 
@@ -117,14 +143,8 @@ export async function getStaticProps(context) {
   const res = await fetch(`http://localhost:3000/configuration/${path}`)
   const data = await res.json()
 
-  if (res.status === 404) {
-    return {
-      notFound: true,
-    }
-  }
-
   return {
     props: { data },
-    revalidate: 1,
+    revalidate: 3600,
   }
 }

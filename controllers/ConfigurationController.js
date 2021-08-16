@@ -19,19 +19,6 @@ class ConfigurationController {
 
     return res.status(404).json({ msg: 'Not found elements' })
   }
-
-  async post(req, res) {
-    const { body } = req;
-    try {
-      const created = await this.configurationService.create(body);
-      if (created) {
-        return res.status(201).json(created);
-      }
-      return res.status(400);
-    } catch (e) {
-      return res.status(400).json(e.errors.name.properties);
-    }
-  }
 }
 
 module.exports = ConfigurationController;

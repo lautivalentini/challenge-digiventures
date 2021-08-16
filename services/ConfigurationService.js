@@ -10,11 +10,6 @@ class ConfigurationService {
     const configuration = this.model.findOne({ name: path });
     return configuration
   }
-
-  create(data) {
-    const configuration = new this.model(data);
-    return configuration.save()
-  }
 }
 
 module.exports = ConfigurationService;
